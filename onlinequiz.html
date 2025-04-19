@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Quiz Game</title>
+  <style>
+    :root {
+      --bg-light: #f4f4f9;
+      --bg-dark: #1c1c1e;
+      --text-light: #333;
+      --text-dark: #f1f1f1;
+      --card-light: #fff;
+      --card-dark: #2c2c2e;
+      --correct: #4CAF50;
+      --incorrect: #f44336;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light-mode {
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      color: var(--text-light);
+    }
+
+    body.dark-mode {
+      background: radial-gradient(circle at top, #2c2c2c, #121212);
+      color: var(--text-dark);
+    }
+
+    .background-graphics {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .circle1 {
+      width: 200px;
+      height: 200px;
+      background-color: #42a5f5;
+      top: 10%;
+      left: 5%;
+    }
+
+    .circle2 {
+      width: 150px;
+      height: 150px;
+      background-color: #ab47bc;
+      bottom: 20%;
+      right: 10%;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(20px);
+      }
+    }
+
+    .quiz-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: var(--card-light);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+      display: none;
+    }
+
+    body.dark-mode .quiz-container {
+      background-color: var(--card-dark);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      margin-bottom: 20px;
+    }
+
+    .answers {
+      list-style: none;
+      padding: 0;
+    }
+
+    .answers li {
+      margin: 10px 0;
+    }
+
+    .answers input {
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #result-container {
+      margin-top: 30px;
+    }
+
+    .correct {
+      color: var(--correct);
+      font-weight: bold;
+    }
+
+    .incorrect {
+      color: var(--incorrect);
+      font-weight: bold;
+    }
+
+    .dark-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .dark-toggle:hover {
+      background-color: #555;
+    }
+
+    .intro-container {
+      text-align: center;
+      margin: 100px auto;
+      max-width: 600px;
+      padding: 40px;
+      background-color: var(--card-light);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .intro-container {
+      background-color: var(--card-dark);
+    }
+
+    .intro-container h1 {
+      font-size: 40px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #42a5f5, #ab47bc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .intro-container p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    #play-again-btn {
+      margin-top: 20px;
+      display: none;
+      background-color: #2196F3;
+    }
+
+    #play-again-btn:hover {
+      background-color: #1976D2;
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div class="background-graphics">
+    <div class="circle circle1"></div>
+    <div class="circle circle2"></div>
+  </div>
+
+  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <!-- Intro Screen -->
+  <div class="intro-container" id="intro">
+    <h1>Online Quiz Game</h1>
+    <p>This quiz is based on general knowledge.</p>
+    <button onclick="startQuiz()">START</button>
+  </div>
+
+  <!-- Quiz Area -->
+  <div class="quiz-container" id="quiz">
+    <h1>Online Quiz Game</h1>
+    <div id="question-container"></div>
+    <button id="submit-btn">Submit</button>
+    <div id="result-container" style="display: none;">
+      <h3 id="score"></h3>
+      <button id="play-again-btn" onclick="playAgain()">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Lisbon"], correctAnswer: "Paris" },
+      { question: "What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Saturn", "Mars"], correctAnswer: "Jupiter" },
+      { question: "Which programming language is used for web development?", options: ["Java", "Python", "JavaScript", "C++"], correctAnswer: "JavaScript" },
+      { question: "Who wrote 'Hamlet'?", options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "J.K. Rowling"], correctAnswer: "William Shakespeare" },
+      { question: "What is the boiling point of water?", options: ["100°C", "90°C", "110°C", "80°C"], correctAnswer: "100°C" },
+      { question: "Which gas do plants absorb?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Helium"], correctAnswer: "Carbon Dioxide" },
+      { question: "Which country is known for the Great Wall?", options: ["India", "China", "Egypt", "Japan"], correctAnswer: "China" },
+      { question: "What is H2O?", options: ["Oxygen", "Salt", "Water", "Hydrogen"], correctAnswer: "Water" },
+      { question: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Mercury"], correctAnswer: "Mars" },
+      { question: "What is the square root of 64?", options: ["6", "7", "8", "9"], correctAnswer: "8" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    function loadQuestion() {
+      const questionContainer = document.getElementById('question-container');
+      questionContainer.innerHTML = '';
+
+      const questionData = quizData[currentQuestionIndex];
+      const questionElement = document.createElement('div');
+      questionElement.classList.add('question');
+      questionElement.innerHTML = `<p><strong>Q${currentQuestionIndex + 1}:</strong> ${questionData.question}</p>`;
+
+      const answersList = document.createElement('ul');
+      answersList.classList.add('answers');
+
+      questionData.options.forEach(option => {
+        const answerItem = document.createElement('li');
+        answerItem.innerHTML = `<label><input type="radio" name="answer" value="${option}"> ${option}</label>`;
+        answersList.appendChild(answerItem);
+      });
+
+      questionElement.appendChild(answersList);
+      questionContainer.appendChild(questionElement);
+    }
+
+    function handleSubmit() {
+      const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+
+      if (selectedAnswer) {
+        const userAnswer = selectedAnswer.value;
+        userAnswers.push(userAnswer);
+
+        if (userAnswer === quizData[currentQuestionIndex].correctAnswer) {
+          score++;
+        }
+      } else {
+        userAnswers.push(null);
+      }
+
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      const questionContainer = document.getElementById('question-container');
+      questionContainer.innerHTML = '';
+
+      quizData.forEach((question, index) => {
+        const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer === question.correctAnswer;
+
+        const resultBlock = document.createElement('div');
+        resultBlock.classList.add('question');
+        resultBlock.style.marginBottom = '20px';
+
+        resultBlock.innerHTML = `
+          <p><strong>Q${index + 1}:</strong> ${question.question}</p>
+          <p>Your answer: <span class="${isCorrect ? 'correct' : 'incorrect'}">${userAnswer || 'No answer'}</span></p>
+          <p>Correct answer: <strong>${question.correctAnswer}</strong></p>
+          <hr>
+        `;
+
+        questionContainer.appendChild(resultBlock);
+      });
+
+      const scoreElement = document.getElementById('score');
+      scoreElement.innerHTML = `Your score: ${score} out of ${quizData.length}`;
+      document.getElementById('result-container').style.display = 'block';
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('play-again-btn').style.display = 'inline-block';
+    }
+
+    function startQuiz() {
+      document.getElementById('intro').style.display = 'none';
+      document.getElementById('quiz').style.display = 'block';
+      loadQuestion();
+    }
+
+    function playAgain() {
+      currentQuestionIndex = 0;
+      score = 0;
+      userAnswers = [];
+      document.getElementById('result-container').style.display = 'none';
+      document.getElementById('submit-btn').style.display = 'inline-block';
+      document.getElementById('play-again-btn').style.display = 'none';
+      loadQuestion();
+    }
+
+    function toggleDarkMode() {
+      const body = document.body;
+      body.classList.toggle('dark-mode');
+      body.classList.toggle('light-mode');
+    }
+
+    document.getElementById('submit-btn').addEventListener('click', handleSubmit);
+  </script>
+</body>
+</html>
